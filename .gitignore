@@ -1,160 +1,105 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import pygame
+import random
 
-# C extensions
-*.so
+# Inicialización de PyGame
+pygame.init()
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Configuración de la pantalla
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Defensa de rocas")
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+# Colores personalizados
+GREEN = (0, 255, 0)    # Color verde para el jugador
+GRAY = (169, 169, 169)  # Color gris para las rocas
+YELLOW = (255, 255, 0)  # Color amarillo para los disparos
+WHITE = (255, 255, 255)
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Variables del juego
+player_x = SCREEN_WIDTH // 2
+player_y = SCREEN_HEIGHT - 50
+player_speed = 5
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+stone_x = random.randint(0, SCREEN_WIDTH)
+stone_y = 0
+stone_speed = 2
 
-# Translations
-*.mo
-*.pot
+# Variables para los disparos
+bullets = []
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+# Función para dibujar al jugador
+def draw_player(x, y):
+    pygame.draw.rect(screen, GREEN, (x, y, 50, 50))
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Función para dibujar las rocas
+def draw_stone(x, y):
+    pygame.draw.rect(screen, GRAY, (x, y, 50, 50))
 
-# Scrapy stuff:
-.scrapy
+# Función para disparar
+def fire_bullet(x, y):
+    bullet = pygame.draw.rect(screen, YELLOW, (x + 20, y - 10, 10, 30))
+    bullets.append(bullet)
 
-# Sphinx documentation
-docs/_build/
+def main():
+    global player_x, player_y, stone_x, stone_y
+    
+    running = True
+    clock = pygame.time.Clock()
+    
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-# PyBuilder
-.pybuilder/
-target/
+        keys = pygame.key.get_pressed()
+        
+        if keys[pygame.K_LEFT]:
+            player_x -= player_speed
+        if keys[pygame.K_RIGHT]:
+            player_x += player_speed
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        # Lógica de disparo
+        if keys[pygame.K_SPACE]:
+            fire_bullet(player_x, player_y)
 
-# IPython
-profile_default/
-ipython_config.py
+        # Lógica de movimiento de las rocas
+        stone_y += stone_speed
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+        # Lógica de movimiento de los disparos hacia arriba
+        for bullet in bullets:
+            bullet.y -= 5  # Mover los disparos hacia arriba
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+        # Lógica de colisión entre disparos y "piedras"
+        for bullet in bullets:
+            if bullet.colliderect(stone_x, stone_y, 50, 50):
+                bullets.remove(bullet)
+                stone_x = random.randint(0, SCREEN_WIDTH)
+                stone_y = 0
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+        # Lógica de colisión con el límite de la pantalla
+        if stone_y > SCREEN_HEIGHT:
+            stone_x = random.randint(0, SCREEN_WIDTH)
+            stone_y = 0
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
+        if player_x < 0:
+            player_x = 0
+        elif player_x > SCREEN_WIDTH - 50:
+            player_x = SCREEN_WIDTH - 50
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+        screen.fill(WHITE)
+        draw_player(player_x, player_y)
+        draw_stone(stone_x, stone_y)
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+        # Dibujar los disparos
+        for bullet in bullets:
+            pygame.draw.rect(screen, YELLOW, bullet)
 
-# SageMath parsed files
-*.sage.py
+        pygame.display.flip()
+        
+        clock.tick(60)
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+    pygame.quit()
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+if __name__ == "__main__":
+    main()
