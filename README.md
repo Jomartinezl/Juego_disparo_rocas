@@ -1,5 +1,3 @@
-# Juego_disparo_rocas
-
 # Defensa de rocas - Juego en PyGame
 
 ## Descripción del Proyecto
